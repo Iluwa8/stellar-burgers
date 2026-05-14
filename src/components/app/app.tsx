@@ -1,7 +1,14 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import '../../index.css';
 import styles from './app.module.css';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import {
+  fetchIngredients,
+  selectIngredients,
+  selectIngredientsLoading,
+  selectIngredientsError
+} from 'src/services/slices/ingridientsSlice';
 
 import { AppHeader } from '@components';
 import { Preloader } from '@ui';
@@ -19,30 +26,31 @@ import {
 import { Modal, OrderInfo, IngredientDetails } from '@components';
 
 const App = () => {
-  // const { isLoading, ingreedients, error } = useSelector(
-  //   (state) => state.ingredients
-  // );
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const background = location.state?.background;
 
   const handleModalClose = () => navigate(-1);
 
-  const isIngredientsLoading = false;
-  const ingredients = [];
-  const error = null;
+  const ingredients = useSelector(selectIngredients);
+  const isIngredientsLoading = useSelector(selectIngredientsLoading);
+  const error = useSelector(selectIngredientsError);
+
+  useEffect(() => {
+    dispatch(fetchIngredients());
+  }, [dispatch]);
 
   return (
     <div className={styles.app}>
       <AppHeader />
-
       {isIngredientsLoading ? (
         <Preloader />
       ) : error ? (
         <div className={`${styles.error} text text_type_main-medium pt-4`}>
           {error}
         </div>
-      ) : ingredients.length > 0 ? (
+      ) : (
         <>
           <Routes location={background || location}>
             <Route path='/' element={<ConstructorPage />} />
@@ -85,10 +93,6 @@ const App = () => {
             </Routes>
           )}
         </>
-      ) : (
-        <div className={`${styles.title} text text_type_main-medium pt-4`}>
-          Нет ингредиентов
-        </div>
       )}
     </div>
   );
