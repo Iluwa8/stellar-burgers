@@ -26,6 +26,21 @@ const initialState: TUserState = {
   error: null
 };
 
+// === Thunk'и ===
+export const registerUser = createAsyncThunk(
+  'user/register',
+  async (data: TRegisterData, { rejectWithValue }) => {
+    try {
+      const res = await registerUserApi(data);
+      setCookie('accessToken', res.accessToken);
+      localStorage.setItem('refreshToken', res.refreshToken);
+      return res.user;
+    } catch (err) {
+      return rejectWithValue((err as Error).message);
+    }
+  }
+);
+
 export const loginUser = createAsyncThunk(
   'user/login',
   async (data: TLoginData, { rejectWithValue }) => {
@@ -77,6 +92,7 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// === Слайс ===
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -87,19 +103,20 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // registerUser
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.data;
+        state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
-
+      // loginUser
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -112,7 +129,7 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-
+      // getUser
       .addCase(getUser.pending, (state) => {
         state.isLoading = true;
       })
@@ -125,7 +142,7 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.isAuthChecked = true;
       })
-
+      // updateUser
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -138,7 +155,7 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-
+      // logoutUser
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
       });
