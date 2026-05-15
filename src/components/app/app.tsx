@@ -1,14 +1,14 @@
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import '../../index.css';
-import styles from './app.module.css';
-import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from '../../services/store';
 import {
   fetchIngredients,
   selectIngredients,
   selectIngredientsLoading,
   selectIngredientsError
-} from 'src/services/slices/ingridientsSlice';
+} from '../../services/slices/ingredientsSlice';
+import '../../index.css';
+import styles from './app.module.css';
 
 import { AppHeader } from '@components';
 import { Preloader } from '@ui';
@@ -31,15 +31,16 @@ const App = () => {
   const navigate = useNavigate();
   const background = location.state?.background;
 
-  const handleModalClose = () => navigate(-1);
-
   const ingredients = useSelector(selectIngredients);
   const isIngredientsLoading = useSelector(selectIngredientsLoading);
   const error = useSelector(selectIngredientsError);
 
+  // Запрашиваем ингредиенты при монтировании
   useEffect(() => {
     dispatch(fetchIngredients());
   }, [dispatch]);
+
+  const handleModalClose = () => navigate(-1);
 
   return (
     <div className={styles.app}>

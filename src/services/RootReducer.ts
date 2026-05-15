@@ -1,6 +1,16 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import ingredientsReducer from './slices/ingridientsSlice';
+import ingredientsReducer from './slices/ingredientsSlice';
+import feedsReducer from './slices/feedsSlice';
+import ordersReducer from './slices/ordersSlice';
+import userReducer from './slices/userSlice';
+import constructorReducer from './slices/constructorSlice';
 
 export const rootReducer = combineReducers({
-  ingredients: ingredientsReducer
+  ingredients: ingredientsReducer,
+  feeds: feedsReducer,
+  orders: ordersReducer,
+  user: userReducer,
+  constructor: constructorReducer
 });
+
+export type RootState = ReturnType<typeof rootReducer>;

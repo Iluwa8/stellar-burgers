@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getIngredientsApi } from '@api';
-import { TIngredient } from '@utils-types';
-import { RootState } from '../store';
+import { getIngredientsApi } from '../../utils/burger-api';
+import { TIngredient } from '../../utils/types';
+import { RootState } from '../RootReducer';
 
 type TIngredientsState = {
   ingredients: TIngredient[];
@@ -19,8 +19,7 @@ export const fetchIngredients = createAsyncThunk(
   'ingredients/fetchIngredients',
   async (_, { rejectWithValue }) => {
     try {
-      const data = await getIngredientsApi();
-      return data;
+      return await getIngredientsApi();
     } catch (err) {
       return rejectWithValue((err as Error).message);
     }
@@ -48,13 +47,11 @@ const ingredientsSlice = createSlice({
   }
 });
 
-export const selectIngredients = (state: TIngredientsState) =>
+export const selectIngredients = (state: RootState) =>
   state.ingredients.ingredients;
-
-export const selectIngredientsLoading = (state: TIngredientsState) =>
+export const selectIngredientsLoading = (state: RootState) =>
   state.ingredients.isLoading;
-
-export const selectIngredientsError = (state: TIngredientsState) =>
+export const selectIngredientsError = (state: RootState) =>
   state.ingredients.error;
 
 export default ingredientsSlice.reducer;
