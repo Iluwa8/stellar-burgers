@@ -1,30 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { orderBurgerApi } from '../../utils/burger-api';
-import { TIngredient, TConstructorIngredient } from '../../utils/types';
+import { TIngredient, TConstructorIngredient, TOrder } from '../../utils/types';
 import { RootState } from '../RootReducer';
-
-// Тип для данных заказа, которые приходят из API (TNewOrder)
-type TOrderModal = {
-  _id: string;
-  status: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  number: number;
-  price: number;
-  owner?: {
-    name: string;
-    email: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-};
 
 type TConstructorState = {
   bun: TIngredient | null;
   ingredients: TConstructorIngredient[];
   orderRequest: boolean;
-  orderModalData: TOrderModal | null;
+  orderModalData: TOrder | null;
   error: string | null;
 };
 
@@ -86,7 +69,16 @@ const constructorSlice = createSlice({
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.orderRequest = false;
-        state.orderModalData = action.payload.order;
+        // Мапим TNewOrder → TOrder, добавляя ingredients
+        state.orderModalData = {
+          _id: action.payload.order._id,
+          status: action.payload.order.status,
+          name: action.payload.order.name,
+          createdAt: action.payload.order.createdAt,
+          updatedAt: action.payload.order.updatedAt,
+          number: action.payload.order.number,
+          ingredients: state.ingredients.map((i) => i._id)
+        };
         state.bun = null;
         state.ingredients = [];
       })

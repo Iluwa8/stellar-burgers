@@ -6,28 +6,24 @@ import {
   createOrder,
   selectOrderRequest,
   selectOrderModalData,
-  clearOrderModal
+  clearOrderModal,
+  selectBun,
+  selectConstructorIngredients
 } from '../../services/slices/constructorSlice';
 import { Modal } from '@components';
 import { OrderInfo } from '@components';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
+  const dispatch = useDispatch();
+  const bun = useSelector(selectBun);
+  const ingredients = useSelector(selectConstructorIngredients) || [];
+  const orderRequest = useSelector(selectOrderRequest);
+  const orderModalData = useSelector(selectOrderModalData);
+
   const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
+    bun: bun,
+    ingredients: ingredients
   };
-
-  const orderRequest = false;
-
-  const orderModalData = null;
-
-  const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
-  };
-  const closeOrderModal = () => {};
 
   const price = useMemo(
     () =>
@@ -38,6 +34,22 @@ export const BurgerConstructor: FC = () => {
       ),
     [constructorItems]
   );
+
+  const onOrderClick = () => {
+    if (!constructorItems.bun || orderRequest) return;
+
+    const orderIngredients = [
+      constructorItems.bun._id,
+      ...constructorItems.ingredients.map((item) => item._id),
+      constructorItems.bun._id
+    ];
+
+    dispatch(createOrder(orderIngredients));
+  };
+
+  const closeOrderModal = () => {
+    dispatch(clearOrderModal());
+  };
 
   return (
     <BurgerConstructorUI
