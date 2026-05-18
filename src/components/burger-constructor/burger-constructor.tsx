@@ -2,6 +2,7 @@ import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
 import { useDispatch, useSelector } from '../../services/store';
+import { useNavigate } from 'react-router-dom';
 import {
   createOrder,
   selectOrderRequest,
@@ -10,11 +11,12 @@ import {
   selectBun,
   selectConstructorIngredients
 } from '../../services/slices/constructorSlice';
-import { Modal } from '@components';
-import { OrderInfo } from '@components';
+import { selectUser } from '../../services/slices/userSlice';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector(selectUser);
   const bun = useSelector(selectBun);
   const ingredients = useSelector(selectConstructorIngredients) || [];
   const orderRequest = useSelector(selectOrderRequest);
@@ -36,6 +38,11 @@ export const BurgerConstructor: FC = () => {
   );
 
   const onOrderClick = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     if (!constructorItems.bun || orderRequest) return;
 
     const orderIngredients = [

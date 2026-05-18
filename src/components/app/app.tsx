@@ -1,5 +1,7 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import { getUser } from '../../services/slices/userSlice';
 import {
   selectIngredientsLoading,
   selectIngredientsError
@@ -9,6 +11,7 @@ import styles from './app.module.css';
 
 import { AppHeader } from '@components';
 import { Preloader } from '@ui';
+import { ProtectedRoute } from '../protected-route/protected-route';
 import {
   ConstructorPage,
   Feed,
@@ -23,12 +26,18 @@ import {
 import { Modal, OrderInfo, IngredientDetails } from '@components';
 
 const App = () => {
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const background = location.state?.background;
 
   const isLoading = useSelector(selectIngredientsLoading);
   const error = useSelector(selectIngredientsError);
+
+  // Проверяем авторизацию при старте приложения
+  useEffect(() => {
+    dispatch(getUser());
+  }, [dispatch]);
 
   const handleModalClose = () => navigate(-1);
 
@@ -45,12 +54,59 @@ const App = () => {
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/reset-password' element={<ResetPassword />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/profile/orders' element={<ProfileOrders />} />
+
+        {/* Роуты только для неавторизованных */}
+        <Route
+          path='/login'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/register'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/forgot-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ForgotPassword />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/reset-password'
+          element={
+            <ProtectedRoute onlyUnAuth>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Защищённые роуты */}
+        <Route
+          path='/profile'
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/profile/orders'
+          element={
+            <ProtectedRoute>
+              <ProfileOrders />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 

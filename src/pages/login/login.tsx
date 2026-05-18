@@ -4,17 +4,30 @@ import { useDispatch, useSelector } from '../../services/store';
 import {
   loginUser,
   selectUserLoading,
-  selectUserError
+  selectUserError,
+  selectUser
 } from '../../services/slices/userSlice';
 import { TLoginData } from '../../utils/burger-api';
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Login: FC = () => {
   const dispatch = useDispatch();
   const isLoading = useSelector(selectUserLoading);
   const error = useSelector(selectUserError);
+  const user = useSelector(selectUser);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      const form = location.state?.form?.pathneme || '/';
+      navigate(form, { replace: true });
+    }
+  }, [user, navigate, location]);
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
