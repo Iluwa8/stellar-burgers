@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
 import { getUser } from '../../services/slices/userSlice';
 import {
+  fetchIngredients,
   selectIngredientsLoading,
   selectIngredientsError
 } from '../../services/slices/ingredientsSlice';
@@ -37,6 +38,7 @@ const App = () => {
   // Проверяем авторизацию при старте приложения
   useEffect(() => {
     dispatch(getUser());
+    dispatch(fetchIngredients());
   }, [dispatch]);
 
   const handleModalClose = () => navigate(-1);
@@ -54,6 +56,8 @@ const App = () => {
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
+        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
 
         {/* Роуты только для неавторизованных */}
         <Route
@@ -103,6 +107,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <ProfileOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/profile/orders/:number'
+          element={
+            <ProtectedRoute>
+              <OrderInfo />
             </ProtectedRoute>
           }
         />

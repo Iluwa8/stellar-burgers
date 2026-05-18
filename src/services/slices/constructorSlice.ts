@@ -97,12 +97,12 @@ export const {
   clearOrderModal
 } = constructorSlice.actions;
 
-export const selectBun = (state: RootState) => state.constructor.bun;
+export const selectBun = (state: RootState) => state.burgerConstructor.bun;
 export const selectConstructorIngredients = (state: RootState) =>
-  state.constructor.ingredients;
+  state.burgerConstructor.ingredients;
 export const selectOrderRequest = (state: RootState) =>
-  state.constructor.orderRequest;
+  state.burgerConstructor.orderRequest;
 export const selectOrderModalData = (state: RootState) =>
-  state.constructor.orderModalData;
+  state.burgerConstructor.orderModalData;
 
 export default constructorSlice.reducer;

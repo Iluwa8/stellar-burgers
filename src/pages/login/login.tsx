@@ -24,8 +24,8 @@ export const Login: FC = () => {
 
   useEffect(() => {
     if (user) {
-      const form = location.state?.form?.pathneme || '/';
-      navigate(form, { replace: true });
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
     }
   }, [user, navigate, location]);
 

@@ -10,7 +10,6 @@ import {
   selectFeedsError,
   selectFeedsLoading
 } from '../../services/slices/feedsSlice';
-import { error } from 'console';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
