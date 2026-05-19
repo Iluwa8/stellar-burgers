@@ -1,23 +1,52 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useSelector, useDispatch } from '../../services/store';
+import { selectIngredients } from '../../services/slices/ingredientsSlice';
+import { selectFeeds } from '../../services/slices/feedsSlice';
+import { selectUserOrders } from '../../services/slices/ordersSlice';
+import {
+  fetchOrderByNumber,
+  selectOrderInfo,
+  selectOrderInfoLoading,
+  selectOrderInfoError,
+  clearOrderInfo,
+  setOrderFromCache
+} from '../../services/slices/orderInfoSlice';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams();
+  const dispatch = useDispatch();
+  const ingredients = useSelector(selectIngredients);
+  const feedOrders = useSelector(selectFeeds);
+  const userOrders = useSelector(selectUserOrders);
+  const orderData = useSelector(selectOrderInfo);
+  const isLoading = useSelector(selectOrderInfoLoading);
+  const loadError = useSelector(selectOrderInfoError);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    const orderNumber = Number(number);
+    if (!number || Number.isNaN(orderNumber)) {
+      return undefined;
+    }
 
-  /* Готовим данные для отображения */
+    const orderFromStore =
+      feedOrders.find((order) => order.number === orderNumber) ||
+      userOrders.find((order) => order.number === orderNumber);
+
+    if (orderFromStore) {
+      dispatch(setOrderFromCache(orderFromStore));
+    } else {
+      dispatch(fetchOrderByNumber(orderNumber));
+    }
+
+    return () => {
+      dispatch(clearOrderInfo());
+    };
+  }, [number, feedOrders, userOrders, dispatch]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -40,7 +69,6 @@ export const OrderInfo: FC = () => {
         } else {
           acc[item].count++;
         }
-
         return acc;
       },
       {}
@@ -58,6 +86,14 @@ export const OrderInfo: FC = () => {
       total
     };
   }, [orderData, ingredients]);
+
+  if (isLoading && !orderData) {
+    return <Preloader />;
+  }
+
+  if (loadError && !orderData) {
+    return <p className='text text_type_main-medium pt-10'>{loadError}</p>;
+  }
 
   if (!orderInfo) {
     return <Preloader />;

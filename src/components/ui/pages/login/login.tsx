@@ -14,7 +14,8 @@ export const LoginUI: FC<LoginUIProps> = ({
   errorText,
   handleSubmit,
   password,
-  setPassword
+  setPassword,
+  registerLinkState
 }) => (
   <main className={styles.container}>
     <div className={`pt-6 ${styles.wrapCenter}`}>
@@ -58,7 +59,11 @@ export const LoginUI: FC<LoginUIProps> = ({
       </form>
       <div className={`pb-4 ${styles.question} text text_type_main-default`}>
         Вы - новый пользователь?
-        <Link to='/register' className={`pl-2 ${styles.link}`}>
+        <Link
+          to='/register'
+          state={registerLinkState}
+          className={`pl-2 ${styles.link}`}
+        >
           Зарегистрироваться
         </Link>
       </div>
