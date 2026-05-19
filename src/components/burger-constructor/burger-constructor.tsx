@@ -19,23 +19,26 @@ export const BurgerConstructor: FC = () => {
   const location = useLocation();
   const user = useSelector(selectUser);
   const bun = useSelector(selectBun);
-  const ingredients = useSelector(selectConstructorIngredients) || [];
+  const ingredients = useSelector(selectConstructorIngredients) ?? [];
   const orderRequest = useSelector(selectOrderRequest);
   const orderModalData = useSelector(selectOrderModalData);
 
-  const constructorItems = {
-    bun: bun,
-    ingredients: ingredients
-  };
+  const constructorItems = useMemo(
+    () => ({
+      bun,
+      ingredients
+    }),
+    [bun, ingredients]
+  );
 
   const price = useMemo(
     () =>
-      (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
-      constructorItems.ingredients.reduce(
+      (bun ? bun.price * 2 : 0) +
+      ingredients.reduce(
         (s: number, v: TConstructorIngredient) => s + v.price,
         0
       ),
-    [constructorItems]
+    [bun, ingredients]
   );
 
   const onOrderClick = () => {
@@ -48,7 +51,9 @@ export const BurgerConstructor: FC = () => {
 
     const orderIngredients = [
       constructorItems.bun._id,
-      ...constructorItems.ingredients.map((item) => item._id),
+      ...constructorItems.ingredients.map(
+        (item: TConstructorIngredient) => item._id
+      ),
       constructorItems.bun._id
     ];
 

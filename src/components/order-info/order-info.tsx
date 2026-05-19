@@ -1,38 +1,51 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient, TOrder } from '@utils-types';
-import { useSelector } from '../../services/store';
+import { TIngredient } from '@utils-types';
+import { useSelector, useDispatch } from '../../services/store';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
 import { selectFeeds } from '../../services/slices/feedsSlice';
 import { selectUserOrders } from '../../services/slices/ordersSlice';
-import { getOrderByNumberApi } from '../../utils/burger-api';
+import {
+  fetchOrderByNumber,
+  selectOrderInfo,
+  selectOrderInfoLoading,
+  selectOrderInfoError,
+  clearOrderInfo,
+  setOrderFromCache
+} from '../../services/slices/orderInfoSlice';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams();
-  const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const dispatch = useDispatch();
+  const ingredients = useSelector(selectIngredients);
   const feedOrders = useSelector(selectFeeds);
   const userOrders = useSelector(selectUserOrders);
-  const [orderData, setOrderData] = useState<TOrder | null>(null);
+  const orderData = useSelector(selectOrderInfo);
+  const isLoading = useSelector(selectOrderInfoLoading);
+  const loadError = useSelector(selectOrderInfoError);
 
   useEffect(() => {
     const orderNumber = Number(number);
+    if (!number || Number.isNaN(orderNumber)) {
+      return undefined;
+    }
+
     const orderFromStore =
       feedOrders.find((order) => order.number === orderNumber) ||
       userOrders.find((order) => order.number === orderNumber);
 
     if (orderFromStore) {
-      setOrderData(orderFromStore);
-      return;
+      dispatch(setOrderFromCache(orderFromStore));
+    } else {
+      dispatch(fetchOrderByNumber(orderNumber));
     }
 
-    if (number) {
-      getOrderByNumberApi(orderNumber)
-        .then((data) => setOrderData(data.orders[0]))
-        .catch(() => setOrderData(null));
-    }
-  }, [number, feedOrders, userOrders]);
+    return () => {
+      dispatch(clearOrderInfo());
+    };
+  }, [number, feedOrders, userOrders, dispatch]);
 
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
@@ -56,7 +69,6 @@ export const OrderInfo: FC = () => {
         } else {
           acc[item].count++;
         }
-
         return acc;
       },
       {}
@@ -74,6 +86,14 @@ export const OrderInfo: FC = () => {
       total
     };
   }, [orderData, ingredients]);
+
+  if (isLoading && !orderData) {
+    return <Preloader />;
+  }
+
+  if (loadError && !orderData) {
+    return <p className='text text_type_main-medium pt-10'>{loadError}</p>;
+  }
 
   if (!orderInfo) {
     return <Preloader />;

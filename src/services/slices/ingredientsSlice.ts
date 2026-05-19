@@ -47,11 +47,20 @@ const ingredientsSlice = createSlice({
   }
 });
 
+// Базовые селекторы
 export const selectIngredients = (state: RootState) =>
   state.ingredients.ingredients;
 export const selectIngredientsLoading = (state: RootState) =>
   state.ingredients.isLoading;
 export const selectIngredientsError = (state: RootState) =>
   state.ingredients.error;
+
+// Селекторы для фильтрации по категориям
+export const selectBuns = (state: RootState) =>
+  state.ingredients.ingredients.filter((i) => i.type === 'bun');
+export const selectMains = (state: RootState) =>
+  state.ingredients.ingredients.filter((i) => i.type === 'main');
+export const selectSauces = (state: RootState) =>
+  state.ingredients.ingredients.filter((i) => i.type === 'sauce');
 
 export default ingredientsSlice.reducer;

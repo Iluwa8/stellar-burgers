@@ -1,29 +1,18 @@
 import { useState, useRef, useEffect, FC } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useDispatch, useSelector } from '../../services/store';
-import { addIngredient } from '../../services/slices/constructorSlice';
-import { selectIngredients } from '../../services/slices/ingredientsSlice';
-import { v4 as uuidv4 } from 'uuid';
-import { TIngredient, TTabMode } from '@utils-types';
+import { useSelector } from '../../services/store';
+import {
+  selectBuns,
+  selectMains,
+  selectSauces
+} from '../../services/slices/ingredientsSlice';
+import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 
 export const BurgerIngredients: FC = () => {
-  const dispatch = useDispatch();
-  const ingredients = useSelector(selectIngredients);
-
-  const handleAdd = (ingredient: TIngredient) => {
-    dispatch(addIngredient({ ...ingredient, id: uuidv4() }));
-  };
-
-  const buns: TIngredient[] = ingredients.filter(
-    (i: TIngredient) => i.type === 'bun'
-  );
-  const mains: TIngredient[] = ingredients.filter(
-    (i: TIngredient) => i.type === 'main'
-  );
-  const sauces: TIngredient[] = ingredients.filter(
-    (i: TIngredient) => i.type === 'sauce'
-  );
+  const buns = useSelector(selectBuns);
+  const mains = useSelector(selectMains);
+  const sauces = useSelector(selectSauces);
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
   const titleBunRef = useRef<HTMLHeadingElement>(null);

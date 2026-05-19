@@ -43,6 +43,7 @@ export const Login: FC = () => {
       password={password}
       setPassword={setPassword}
       handleSubmit={handleSubmit}
+      registerLinkState={location.state}
     />
   );
 };

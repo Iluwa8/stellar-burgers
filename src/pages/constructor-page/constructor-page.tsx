@@ -1,28 +1,17 @@
-import { useSelector, useDispatch } from '../../services/store';
-import { useEffect } from 'react';
-import {
-  fetchIngredients,
-  selectIngredients,
-  selectIngredientsLoading
-} from '../../services/slices/ingredientsSlice';
-
+import { FC } from 'react';
+import { useSelector } from '../../services/store';
+import { selectIngredientsLoading } from '../../services/slices/ingredientsSlice';
+import { Preloader } from '@ui';
+import { BurgerIngredients } from '@components';
+import { BurgerConstructor } from '@components';
 import styles from './constructor-page.module.css';
 
-import { BurgerIngredients } from '../../components';
-import { BurgerConstructor } from '../../components';
-import { Preloader } from '../../components/ui';
-import { FC } from 'react';
-
 export const ConstructorPage: FC = () => {
-  const dispatch = useDispatch();
-  const ingredients = useSelector(selectIngredients);
-  const loading = useSelector(selectIngredientsLoading);
+  const isLoading = useSelector(selectIngredientsLoading);
 
-  useEffect(() => {
-    dispatch(fetchIngredients());
-  }, [dispatch]);
-
-  if (loading) return <Preloader />;
+  if (isLoading) {
+    return <Preloader />;
+  }
 
   return (
     <main className={styles.containerMain}>

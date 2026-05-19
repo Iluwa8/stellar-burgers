@@ -35,7 +35,7 @@ const App = () => {
   const isLoading = useSelector(selectIngredientsLoading);
   const error = useSelector(selectIngredientsError);
 
-  // Проверяем авторизацию при старте приложения
+  // Загружаем ингредиенты и проверяем авторизацию один раз при старте
   useEffect(() => {
     dispatch(getUser());
     dispatch(fetchIngredients());
@@ -59,7 +59,6 @@ const App = () => {
         <Route path='/feed/:number' element={<OrderInfo />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
 
-        {/* Роуты только для неавторизованных */}
         <Route
           path='/login'
           element={
@@ -93,7 +92,6 @@ const App = () => {
           }
         />
 
-        {/* Защищённые роуты */}
         <Route
           path='/profile'
           element={

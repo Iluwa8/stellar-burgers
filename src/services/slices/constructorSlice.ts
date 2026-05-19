@@ -40,6 +40,7 @@ const constructorSlice = createSlice({
       } else {
         state.ingredients.push(action.payload);
       }
+      // НЕТ return — мутируем state напрямую через Immer
     },
     removeIngredient: (state, action: PayloadAction<number>) => {
       state.ingredients.splice(action.payload, 1);
@@ -69,7 +70,6 @@ const constructorSlice = createSlice({
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.orderRequest = false;
-        // Мапим TNewOrder → TOrder, добавляя ingredients
         state.orderModalData = {
           _id: action.payload.order._id,
           status: action.payload.order.status,
