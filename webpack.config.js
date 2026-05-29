@@ -49,7 +49,8 @@ module.exports = {
   },
   plugins: [
     new ESLintPlugin({
-      extensions: ['.js', '.jsx', '.ts', '.tsx']
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      failOnWarning: false
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html'
@@ -90,6 +91,12 @@ module.exports = {
     compress: true,
     historyApiFallback: true,
     port: 4000,
-    open: true
+    open: true,
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false
+      }
+    }
   }
 };

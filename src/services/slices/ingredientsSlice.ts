@@ -9,7 +9,7 @@ type TIngredientsState = {
   error: string | null;
 };
 
-const initialState: TIngredientsState = {
+export const initialState: TIngredientsState = {
   ingredients: [],
   isLoading: false,
   error: null
@@ -47,7 +47,6 @@ const ingredientsSlice = createSlice({
   }
 });
 
-// Базовые селекторы
 export const selectIngredients = (state: RootState) =>
   state.ingredients.ingredients;
 export const selectIngredientsLoading = (state: RootState) =>
@@ -55,7 +54,6 @@ export const selectIngredientsLoading = (state: RootState) =>
 export const selectIngredientsError = (state: RootState) =>
   state.ingredients.error;
 
-// Селекторы для фильтрации по категориям
 export const selectBuns = (state: RootState) =>
   state.ingredients.ingredients.filter((i) => i.type === 'bun');
 export const selectMains = (state: RootState) =>

@@ -40,7 +40,6 @@ const constructorSlice = createSlice({
       } else {
         state.ingredients.push(action.payload);
       }
-      // НЕТ return — мутируем state напрямую через Immer
     },
     removeIngredient: (state, action: PayloadAction<number>) => {
       state.ingredients.splice(action.payload, 1);
@@ -77,7 +76,7 @@ const constructorSlice = createSlice({
           createdAt: action.payload.order.createdAt,
           updatedAt: action.payload.order.updatedAt,
           number: action.payload.order.number,
-          ingredients: state.ingredients.map((i) => i._id)
+          ingredients: action.meta.arg
         };
         state.bun = null;
         state.ingredients = [];
@@ -105,4 +104,5 @@ export const selectOrderRequest = (state: RootState) =>
 export const selectOrderModalData = (state: RootState) =>
   state.burgerConstructor.orderModalData;
 
+export { initialState };
 export default constructorSlice.reducer;
