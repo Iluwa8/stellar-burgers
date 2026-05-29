@@ -38,15 +38,29 @@ describe('burgerConstructor slice reducer', () => {
   };
 
   it('должен обрабатывать экшен добавления булки', () => {
-    const state = burgerConstructorReducer(initialState, addIngredient(mockBun));
+    const state = burgerConstructorReducer(
+      initialState,
+      addIngredient(mockBun)
+    );
     expect(state.bun).toEqual(mockBun);
     expect(state.ingredients).toHaveLength(0);
   });
 
   it('должен заменять булку при добавлении новой', () => {
-    const anotherBun = { ...mockBun, _id: 'bun2', id: 'bun-uuid-2', name: 'Другая булка' };
-    const stateWithBun = burgerConstructorReducer(initialState, addIngredient(mockBun));
-    const state = burgerConstructorReducer(stateWithBun, addIngredient(anotherBun));
+    const anotherBun = {
+      ...mockBun,
+      _id: 'bun2',
+      id: 'bun-uuid-2',
+      name: 'Другая булка'
+    };
+    const stateWithBun = burgerConstructorReducer(
+      initialState,
+      addIngredient(mockBun)
+    );
+    const state = burgerConstructorReducer(
+      stateWithBun,
+      addIngredient(anotherBun)
+    );
     expect(state.bun).toEqual(anotherBun);
     expect(state.ingredients).toHaveLength(0);
   });

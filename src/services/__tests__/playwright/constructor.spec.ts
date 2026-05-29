@@ -75,15 +75,16 @@ test.describe('Конструктор бургера', () => {
     const mainCard = page.locator('[data-cy="ingredient-main"]').first();
     await mainCard.locator('button').click();
 
-    await expect(page.locator('[data-cy="constructor-ingredient"]')).toHaveCount(
-      1
-    );
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toHaveCount(1);
   });
 
   test('должен добавлять соус в конструктор', async ({ page }) => {
     const sauceCard = page.locator('[data-cy="ingredient-sauce"]').first();
     await sauceCard.locator('button').click();
 
+    // eslint-disable-next-line prettier/prettier
     await expect(page.locator('[data-cy="constructor-ingredient"]')).toHaveCount(
       1
     );
@@ -117,9 +118,21 @@ test.describe('Конструктор бургера', () => {
   });
 
   test('должен создавать заказ и показывать номер', async ({ page }) => {
-    await page.locator('[data-cy="ingredient-bun"]').first().locator('button').click();
-    await page.locator('[data-cy="ingredient-main"]').first().locator('button').click();
-    await page.locator('[data-cy="ingredient-sauce"]').first().locator('button').click();
+    await page
+      .locator('[data-cy="ingredient-bun"]')
+      .first()
+      .locator('button')
+      .click();
+    await page
+      .locator('[data-cy="ingredient-main"]')
+      .first()
+      .locator('button')
+      .click();
+    await page
+      .locator('[data-cy="ingredient-sauce"]')
+      .first()
+      .locator('button')
+      .click();
 
     await page.locator('[data-cy="order-button"]').click();
 
@@ -131,9 +144,11 @@ test.describe('Конструктор бургера', () => {
     await page.locator('[data-cy="modal-close"]').click();
     await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
 
-    await expect(page.locator('[data-cy="constructor-bun-top"]')).not.toBeVisible();
-    await expect(page.locator('[data-cy="constructor-ingredient"]')).toHaveCount(
-      0
-    );
+    await expect(
+      page.locator('[data-cy="constructor-bun-top"]')
+    ).not.toBeVisible();
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toHaveCount(0);
   });
 });

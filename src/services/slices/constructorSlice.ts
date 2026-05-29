@@ -11,7 +11,7 @@ type TConstructorState = {
   error: string | null;
 };
 
-const initialState: TConstructorState = {
+export const initialState: TConstructorState = {
   bun: null,
   ingredients: [],
   orderRequest: false,
@@ -76,7 +76,7 @@ const constructorSlice = createSlice({
           createdAt: action.payload.order.createdAt,
           updatedAt: action.payload.order.updatedAt,
           number: action.payload.order.number,
-          ingredients: action.meta.arg
+          ingredients: state.ingredients.map((i) => i._id)
         };
         state.bun = null;
         state.ingredients = [];
@@ -104,5 +104,4 @@ export const selectOrderRequest = (state: RootState) =>
 export const selectOrderModalData = (state: RootState) =>
   state.burgerConstructor.orderModalData;
 
-export { initialState };
 export default constructorSlice.reducer;
