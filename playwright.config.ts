@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './__tests__/playwright',
+  testDir: './src/services/__tests__/playwright',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -12,7 +12,7 @@ export default defineConfig({
     command: 'npm start',
     url: 'http://localhost:4000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 120000
   },
 
   use: {
