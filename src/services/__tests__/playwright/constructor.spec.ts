@@ -5,7 +5,6 @@ import { mockUser } from './mocks/user';
 
 test.describe('Конструктор бургера', () => {
   test.beforeEach(async ({ page, context }) => {
-    // Cookies
     await context.addCookies([
       {
         name: 'accessToken',
@@ -21,13 +20,6 @@ test.describe('Конструктор бургера', () => {
       }
     ]);
 
-    // LocalStorage
-    await page.evaluate(() => {
-      localStorage.setItem('accessToken', 'mock_access_token');
-      localStorage.setItem('refreshToken', 'mock_refresh_token');
-    });
-
-    // Моки API
     await page.route('**/api/ingredients', (route) => {
       route.fulfill({
         status: 200,
@@ -53,12 +45,21 @@ test.describe('Конструктор бургера', () => {
     });
 
     await page.goto('/');
+
+    await page.evaluate(() => {
+      localStorage.setItem('accessToken', 'mock_access_token');
+      localStorage.setItem('refreshToken', 'mock_refresh_token');
+    });
+
     await page.waitForSelector('[data-cy="ingredient-bun"]');
   });
 
   test.afterEach(async ({ page, context }) => {
     await context.clearCookies();
-    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    });
   });
 
   test('должен добавлять булку в конструктор', async ({ page }) => {
@@ -66,8 +67,7 @@ test.describe('Конструктор бургера', () => {
       0
     );
 
-    await page.locator('[data-cy="ingredient-bun"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-bun"] button').first().click();
 
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
   });
@@ -77,8 +77,7 @@ test.describe('Конструктор бургера', () => {
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
 
-    await page.locator('[data-cy="ingredient-main"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-main"] button').first().click();
 
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
@@ -90,8 +89,7 @@ test.describe('Конструктор бургера', () => {
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
 
-    await page.locator('[data-cy="ingredient-sauce"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-sauce"] button').first().click();
 
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
@@ -129,7 +127,9 @@ test.describe('Конструктор бургера', () => {
 
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
 
-    await page.locator('[data-cy="modal-overlay"]').click();
+    await page
+      .locator('[data-cy="modal-overlay"]')
+      .evaluate((el) => (el as HTMLElement).click());
 
     await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
   });
@@ -139,16 +139,14 @@ test.describe('Конструктор бургера', () => {
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
       0
     );
-    await page.locator('[data-cy="ingredient-bun"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-bun"] button').first().click();
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
 
     // Начинка
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
-    await page.locator('[data-cy="ingredient-main"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-main"] button').first().click();
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toBeVisible();
@@ -157,8 +155,7 @@ test.describe('Конструктор бургера', () => {
     const ingredientCount = await page
       .locator('[data-cy="constructor-ingredient"]')
       .count();
-    await page.locator('[data-cy="ingredient-sauce"]').first().click();
-    await page.locator('[data-cy="add-button"]').first().click();
+    await page.locator('[data-cy="ingredient-sauce"] button').first().click();
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(ingredientCount + 1);
