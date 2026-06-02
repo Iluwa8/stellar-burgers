@@ -5,6 +5,7 @@ import { mockUser } from './mocks/user';
 
 test.describe('Конструктор бургера', () => {
   test.beforeEach(async ({ page, context }) => {
+    // Cookies
     await context.addCookies([
       {
         name: 'accessToken',
@@ -20,6 +21,13 @@ test.describe('Конструктор бургера', () => {
       }
     ]);
 
+    // LocalStorage
+    await page.evaluate(() => {
+      localStorage.setItem('accessToken', 'mock_access_token');
+      localStorage.setItem('refreshToken', 'mock_refresh_token');
+    });
+
+    // Моки API
     await page.route('**/api/ingredients', (route) => {
       route.fulfill({
         status: 200,
@@ -48,8 +56,12 @@ test.describe('Конструктор бургера', () => {
     await page.waitForSelector('[data-cy="ingredient-bun"]');
   });
 
+  test.afterEach(async ({ page, context }) => {
+    await context.clearCookies();
+    await page.evaluate(() => localStorage.clear());
+  });
+
   test('должен добавлять булку в конструктор', async ({ page }) => {
-    // Проверяем, что булки ещё нет в конструкторе
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
       0
     );
@@ -57,12 +69,10 @@ test.describe('Конструктор бургера', () => {
     await page.locator('[data-cy="ingredient-bun"]').first().click();
     await page.locator('[data-cy="add-button"]').first().click();
 
-    // Проверяем, что булка появилась
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
   });
 
   test('должен добавлять начинку в конструктор', async ({ page }) => {
-    // Проверяем, что начинки ещё нет
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
@@ -70,14 +80,12 @@ test.describe('Конструктор бургера', () => {
     await page.locator('[data-cy="ingredient-main"]').first().click();
     await page.locator('[data-cy="add-button"]').first().click();
 
-    // Проверяем, что начинка появилась
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toBeVisible();
   });
 
   test('должен добавлять соус в конструктор', async ({ page }) => {
-    // Проверяем, что соуса ещё нет
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
@@ -85,21 +93,17 @@ test.describe('Конструктор бургера', () => {
     await page.locator('[data-cy="ingredient-sauce"]').first().click();
     await page.locator('[data-cy="add-button"]').first().click();
 
-    // Проверяем, что соус появился
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toBeVisible();
   });
 
   test('должен открывать модальное окно ингредиента', async ({ page }) => {
-    const bunName = 'Краторная булка N-200i'; // или динамически из мока
+    const bunName = 'Краторная булка N-200i';
 
     await page.locator('[data-cy="ingredient-bun"]').first().click();
 
-    // Проверяем, что модалка открылась
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
-
-    // Проверяем, что в модалке именно этот ингредиент
     await expect(page.locator('[data-cy="modal"]')).toContainText(bunName);
     await expect(page.locator('[data-cy="modal"]')).toContainText(
       'Детали ингредиента'
@@ -111,7 +115,6 @@ test.describe('Конструктор бургера', () => {
   }) => {
     await page.locator('[data-cy="ingredient-bun"]').first().click();
 
-    // Промежуточная проверка: модалка точно открылась
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
 
     await page.locator('[data-cy="modal-close"]').click();
@@ -124,7 +127,6 @@ test.describe('Конструктор бургера', () => {
   }) => {
     await page.locator('[data-cy="ingredient-bun"]').first().click();
 
-    // Промежуточная проверка
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
 
     await page.locator('[data-cy="modal-overlay"]').click();
@@ -133,7 +135,7 @@ test.describe('Конструктор бургера', () => {
   });
 
   test('должен создавать заказ и показывать номер', async ({ page }) => {
-    // Добавляем булку с проверками
+    // Булка
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
       0
     );
@@ -141,7 +143,7 @@ test.describe('Конструктор бургера', () => {
     await page.locator('[data-cy="add-button"]').first().click();
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
 
-    // Добавляем начинку с проверками
+    // Начинка
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
@@ -151,7 +153,7 @@ test.describe('Конструктор бургера', () => {
       page.locator('[data-cy="constructor-ingredient"]')
     ).toBeVisible();
 
-    // Добавляем соус с проверками
+    // Соус
     const ingredientCount = await page
       .locator('[data-cy="constructor-ingredient"]')
       .count();
@@ -161,14 +163,25 @@ test.describe('Конструктор бургера', () => {
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(ingredientCount + 1);
 
+    // Оформляем заказ
     await page.locator('[data-cy="order-button"]').click();
 
-    // Проверяем, что модалка открылась
+    // Модалка открылась, номер внутри модалки
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
-
-    // Проверяем номер заказа СТРОГО внутри модалки
     await expect(
       page.locator('[data-cy="modal"] [data-cy="order-number"]')
     ).toContainText('12345');
+
+    // Закрываем модалку
+    await page.locator('[data-cy="modal-close"]').click();
+    await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
+
+    // Конструктор очищен
+    await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
+      0
+    );
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toHaveCount(0);
   });
 });
