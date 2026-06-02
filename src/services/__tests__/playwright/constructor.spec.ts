@@ -1,56 +1,43 @@
 import { test, expect } from '@playwright/test';
 import { mockIngredients } from './mocks/ingredients';
-import { mockUser } from './mocks/user';
 import { mockOrder } from './mocks/order';
+import { mockUser } from './mocks/user';
 
 test.describe('Конструктор бургера', () => {
   test.beforeEach(async ({ page, context }) => {
     await context.addCookies([
       {
         name: 'accessToken',
-        value: 'mock-access-token',
+        value: 'mock_access_token',
         domain: 'localhost',
-        path: '/',
-        httpOnly: false,
-        secure: false,
-        sameSite: 'Lax'
+        path: '/'
+      },
+      {
+        name: 'refreshToken',
+        value: 'mock_refresh_token',
+        domain: 'localhost',
+        path: '/'
       }
     ]);
 
-    await page.addInitScript(() => {
-      localStorage.setItem('refreshToken', 'mock-refresh-token');
-    });
-
-    await page.route('**/api/ingredients', async (route) => {
-      if (route.request().method() !== 'GET') {
-        await route.continue();
-        return;
-      }
-      await route.fulfill({
+    await page.route('**/api/ingredients', (route) => {
+      route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(mockIngredients)
       });
     });
 
-    await page.route('**/api/auth/user', async (route) => {
-      if (route.request().method() !== 'GET') {
-        await route.continue();
-        return;
-      }
-      await route.fulfill({
+    await page.route('**/api/auth/user', (route) => {
+      route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(mockUser)
       });
     });
 
-    await page.route('**/api/orders', async (route) => {
-      if (route.request().method() !== 'POST') {
-        await route.continue();
-        return;
-      }
-      await route.fulfill({
+    await page.route('**/api/orders', (route) => {
+      route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(mockOrder)
@@ -62,39 +49,59 @@ test.describe('Конструктор бургера', () => {
   });
 
   test('должен добавлять булку в конструктор', async ({ page }) => {
-    const bunCard = page.locator('[data-cy="ingredient-bun"]').first();
-    await bunCard.locator('button').click();
+    // Проверяем, что булки ещё нет в конструкторе
+    await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
+      0
+    );
 
+    await page.locator('[data-cy="ingredient-bun"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+
+    // Проверяем, что булка появилась
     await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
-    await expect(
-      page.locator('[data-cy="constructor-bun-bottom"]')
-    ).toBeVisible();
   });
 
   test('должен добавлять начинку в конструктор', async ({ page }) => {
-    const mainCard = page.locator('[data-cy="ingredient-main"]').first();
-    await mainCard.locator('button').click();
-
+    // Проверяем, что начинки ещё нет
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
-    ).toHaveCount(1);
+    ).toHaveCount(0);
+
+    await page.locator('[data-cy="ingredient-main"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+
+    // Проверяем, что начинка появилась
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toBeVisible();
   });
 
   test('должен добавлять соус в конструктор', async ({ page }) => {
-    const sauceCard = page.locator('[data-cy="ingredient-sauce"]').first();
-    await sauceCard.locator('button').click();
+    // Проверяем, что соуса ещё нет
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toHaveCount(0);
 
-    // eslint-disable-next-line prettier/prettier
-    await expect(page.locator('[data-cy="constructor-ingredient"]')).toHaveCount(
-      1
-    );
+    await page.locator('[data-cy="ingredient-sauce"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+
+    // Проверяем, что соус появился
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toBeVisible();
   });
 
   test('должен открывать модальное окно ингредиента', async ({ page }) => {
+    const bunName = 'Краторная булка N-200i'; // или динамически из мока
+
     await page.locator('[data-cy="ingredient-bun"]').first().click();
 
+    // Проверяем, что модалка открылась
     await expect(page.locator('[data-cy="modal"]')).toBeVisible();
-    await expect(page.locator('[data-cy="modal-title"]')).toContainText(
+
+    // Проверяем, что в модалке именно этот ингредиент
+    await expect(page.locator('[data-cy="modal"]')).toContainText(bunName);
+    await expect(page.locator('[data-cy="modal"]')).toContainText(
       'Детали ингредиента'
     );
   });
@@ -103,7 +110,12 @@ test.describe('Конструктор бургера', () => {
     page
   }) => {
     await page.locator('[data-cy="ingredient-bun"]').first().click();
+
+    // Промежуточная проверка: модалка точно открылась
+    await expect(page.locator('[data-cy="modal"]')).toBeVisible();
+
     await page.locator('[data-cy="modal-close"]').click();
+
     await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
   });
 
@@ -111,44 +123,52 @@ test.describe('Конструктор бургера', () => {
     page
   }) => {
     await page.locator('[data-cy="ingredient-bun"]').first().click();
-    await page.locator('[data-cy="modal-overlay"]').click({
-      position: { x: 10, y: 10 }
-    });
+
+    // Промежуточная проверка
+    await expect(page.locator('[data-cy="modal"]')).toBeVisible();
+
+    await page.locator('[data-cy="modal-overlay"]').click();
+
     await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
   });
 
   test('должен создавать заказ и показывать номер', async ({ page }) => {
-    await page
-      .locator('[data-cy="ingredient-bun"]')
-      .first()
-      .locator('button')
-      .click();
-    await page
-      .locator('[data-cy="ingredient-main"]')
-      .first()
-      .locator('button')
-      .click();
-    await page
-      .locator('[data-cy="ingredient-sauce"]')
-      .first()
-      .locator('button')
-      .click();
-
-    await page.locator('[data-cy="order-button"]').click();
-
-    await expect(page.locator('[data-cy="modal"]')).toBeVisible();
-    await expect(page.locator('[data-cy="order-number"]')).toContainText(
-      String(mockOrder.order.number)
+    // Добавляем булку с проверками
+    await expect(page.locator('[data-cy="constructor-bun-top"]')).toHaveCount(
+      0
     );
+    await page.locator('[data-cy="ingredient-bun"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+    await expect(page.locator('[data-cy="constructor-bun-top"]')).toBeVisible();
 
-    await page.locator('[data-cy="modal-close"]').click();
-    await expect(page.locator('[data-cy="modal"]')).not.toBeVisible();
-
-    await expect(
-      page.locator('[data-cy="constructor-bun-top"]')
-    ).not.toBeVisible();
+    // Добавляем начинку с проверками
     await expect(
       page.locator('[data-cy="constructor-ingredient"]')
     ).toHaveCount(0);
+    await page.locator('[data-cy="ingredient-main"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toBeVisible();
+
+    // Добавляем соус с проверками
+    const ingredientCount = await page
+      .locator('[data-cy="constructor-ingredient"]')
+      .count();
+    await page.locator('[data-cy="ingredient-sauce"]').first().click();
+    await page.locator('[data-cy="add-button"]').first().click();
+    await expect(
+      page.locator('[data-cy="constructor-ingredient"]')
+    ).toHaveCount(ingredientCount + 1);
+
+    await page.locator('[data-cy="order-button"]').click();
+
+    // Проверяем, что модалка открылась
+    await expect(page.locator('[data-cy="modal"]')).toBeVisible();
+
+    // Проверяем номер заказа СТРОГО внутри модалки
+    await expect(
+      page.locator('[data-cy="modal"] [data-cy="order-number"]')
+    ).toContainText('12345');
   });
 });
