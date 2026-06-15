@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import styles from './app-header.module.css';
 import { TAppHeaderUIProps } from './type';
 import {
@@ -41,10 +41,9 @@ export const AppHeaderUI: FC<TAppHeaderUIProps> = ({ userName }) => (
           )}
         </NavLink>
       </div>
-      {/* Логотип — обычный Link, активное состояние не нужно */}
-      <Link to='/' className={styles.logo}>
+      <NavLink to='/' className={styles.logo}>
         <Logo className='' />
-      </Link>
+      </NavLink>
       <NavLink
         to='/profile'
         className={({ isActive }) =>

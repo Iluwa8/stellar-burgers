@@ -11,7 +11,7 @@ type TConstructorState = {
   error: string | null;
 };
 
-const initialState: TConstructorState = {
+export const initialState: TConstructorState = {
   bun: null,
   ingredients: [],
   orderRequest: false,
@@ -40,7 +40,6 @@ const constructorSlice = createSlice({
       } else {
         state.ingredients.push(action.payload);
       }
-      // НЕТ return — мутируем state напрямую через Immer
     },
     removeIngredient: (state, action: PayloadAction<number>) => {
       state.ingredients.splice(action.payload, 1);

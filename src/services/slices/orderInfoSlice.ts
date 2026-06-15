@@ -9,7 +9,7 @@ type TOrderInfoState = {
   error: string | null;
 };
 
-const initialState: TOrderInfoState = {
+export const initialState: TOrderInfoState = {
   order: null,
   isLoading: false,
   error: null
@@ -20,11 +20,10 @@ export const fetchOrderByNumber = createAsyncThunk(
   async (number: number, { rejectWithValue }) => {
     try {
       const data = await getOrderByNumberApi(number);
-      const order = data.orders[0];
-      if (!order) {
+      if (!data?.success || !data.orders?.[0]) {
         return rejectWithValue('Заказ не найден');
       }
-      return order;
+      return data.orders[0];
     } catch (err) {
       return rejectWithValue((err as Error).message);
     }
